@@ -19,4 +19,4 @@ This repository contains JavaScript scripts designed to compare CSV files and ex
 Clone the repository:
 
 ```bash
-git clone **repo address ends with .git***
+git clone https://github.com/5ajaki/JSONextract.git)https://github.com/5ajaki/JSONextract.git
