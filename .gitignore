@@ -1,0 +1,14 @@
+# Ignore File
+
+# CSV Output File
+*.csv
+
+# Compiler files
+cache/
+out/
+
+# Docs
+docs/
+
+# Dotenv file
+.env
