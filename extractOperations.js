@@ -1,10 +1,10 @@
 const fs = require("fs");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 
-// Function to convert the JSON data to CSV format for a specific nonce
-const jsonToCSV = (data, nonce) => {
+// Function to convert JSON data to CSV format
+const jsonToCSV = (data, fileName) => {
   const csvWriter = createCsvWriter({
-    path: `operations_nonce_${nonce}.csv`,
+    path: fileName,
     header: [
       { id: "token_address", title: "token_address" },
       { id: "receiver", title: "receiver" },
@@ -20,9 +20,7 @@ const jsonToCSV = (data, nonce) => {
 
   csvWriter
     .writeRecords(records)
-    .then(() =>
-      console.log(`CSV file for nonce ${nonce} was written successfully`)
-    );
+    .then(() => console.log(`CSV file ${fileName} was written successfully`));
 };
 
 // Read the JSON file
@@ -34,22 +32,36 @@ fs.readFile("transactions.json", "utf8", (err, jsonString) => {
   try {
     const data = JSON.parse(jsonString);
 
-    // Loop through each nonce and write separate CSV files
-    for (let nonce = 72; nonce <= 77; nonce++) {
-      const operations = data.results
-        .filter((result) => result.nonce === nonce)
-        .flatMap((result) =>
-          result.dataDecoded.parameters.flatMap((param) =>
-            param.valueDecoded.map((valDecoded) => ({
+    // Initialize an array for consolidated operations and for each nonce
+    const consolidatedOperations = [];
+    const operationsByNonce = {};
+
+    data.results.forEach((result) => {
+      if (result.nonce >= 72 && result.nonce <= 77) {
+        if (!operationsByNonce[result.nonce]) {
+          operationsByNonce[result.nonce] = [];
+        }
+
+        result.dataDecoded.parameters.forEach((param) => {
+          param.valueDecoded.forEach((valDecoded) => {
+            const operation = {
               nonce: result.nonce,
               Address: valDecoded.to,
               Amount: parseInt(valDecoded.value) / 1e18, // Convert from Wei to Eth
-            }))
-          )
-        );
+            };
+            consolidatedOperations.push(operation);
+            operationsByNonce[result.nonce].push(operation);
+          });
+        });
+      }
+    });
 
-      // Convert JSON to CSV and save for each nonce
-      jsonToCSV(operations, nonce);
+    // Write the consolidated operations to a single file
+    jsonToCSV(consolidatedOperations, "consolidated_operations.csv");
+
+    // Write operations for each nonce to separate files
+    for (const [nonce, operations] of Object.entries(operationsByNonce)) {
+      jsonToCSV(operations, `operations_nonce_${nonce}.csv`);
     }
   } catch (err) {
     console.log("Error parsing JSON string:", err);
