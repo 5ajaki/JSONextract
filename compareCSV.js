@@ -101,7 +101,7 @@ const compareFiles = async () => {
   try {
     const options = argv.verbose
       ? await runInteractiveMode()
-      : { caseSensitive: false, tolerance: 0.0001, showUnmatched: false };
+      : { caseSensitive: false, tolerance: 0.0000001, showUnmatched: false };
 
     const file1 = await readCSV("operations_nonce_72.csv");
     const file2 = await readCSV("batch1-DoubleCheck.csv");
@@ -121,6 +121,8 @@ const compareFiles = async () => {
     }
   } catch (err) {
     console.error("Error:", err);
+  } finally {
+    rl.close();
   }
 };
 
