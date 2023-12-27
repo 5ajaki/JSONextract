@@ -103,8 +103,8 @@ const compareFiles = async () => {
       ? await runInteractiveMode()
       : { caseSensitive: false, tolerance: 0.0000001, showUnmatched: false };
 
-    const file1 = await readCSV("operations_nonce_72.csv");
-    const file2 = await readCSV("batch1-DoubleCheck.csv");
+    const file1 = await readCSV("comparing CSVs/consolidated_operations.csv");
+    const file2 = await readCSV("comparing CSVs/Makoto's Original.csv");
 
     const comparisonResult = compareCSV(file1, file2, options);
 
