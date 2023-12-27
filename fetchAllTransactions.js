@@ -1,19 +1,27 @@
 const axios = require("axios");
 const fs = require("fs");
+const readline = require("readline");
 
-const fetchAllTransactions = async () => {
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+const prompt = (question) =>
+  new Promise((resolve) => rl.question(question, resolve));
+
+const fetchAllTransactions = async (safeAddress) => {
   let allTransactions = [];
   let offset = 0;
-  const limit = 20; // Adjust based on the API's response limit
+  const limit = 20;
   let isMoreDataAvailable = true;
 
   while (isMoreDataAvailable) {
     try {
       const response = await axios.get(
-        `https://safe-transaction-mainnet.safe.global/api/v1/safes/0x91c32893216dE3eA0a55ABb9851f581d4503d39b/all-transactions/?offset=${offset}&limit=${limit}&executed=true&queued=true&trusted=true`,
+        `https://safe-transaction-mainnet.safe.global/api/v1/safes/${safeAddress}/all-transactions/?offset=${offset}&limit=${limit}&executed=true&queued=true&trusted=true`,
         {
           headers: { accept: "application/json" },
-          // Add CSRF token if needed
         }
       );
 
@@ -33,12 +41,7 @@ const fetchAllTransactions = async () => {
     }
   }
 
-  // Structure the data with a 'results' field
-  const structuredData = {
-    results: allTransactions,
-  };
-
-  // Save all transactions to a file
+  const structuredData = { results: allTransactions };
   fs.writeFileSync(
     "allTransactions.json",
     JSON.stringify(structuredData, null, 2)
@@ -46,4 +49,10 @@ const fetchAllTransactions = async () => {
   console.log("All transactions have been saved to allTransactions.json");
 };
 
-fetchAllTransactions();
+const main = async () => {
+  const safeAddress = await prompt("Enter the safe address: ");
+  await fetchAllTransactions(safeAddress);
+  rl.close();
+};
+
+main();
