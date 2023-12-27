@@ -9,12 +9,23 @@ const transactionsToCSV = (data, fileName) => {
       { id: "nonce", title: "Nonce" },
       { id: "transactionHash", title: "Transaction Hash" },
       { id: "executor", title: "Executor" },
-      { id: "fee", title: "Fee" },
+      { id: "fee", title: "Fee (in Ether)" },
+      { id: "executionDate", title: "Execution Date" },
     ],
   });
 
+  const filteredData = data.filter((record) => {
+    // Check if any key value in the record is undefined, null, or NaN
+    return !(
+      record.nonce === undefined ||
+      //      record.transactionHash === undefined ||
+      //     record.executor === undefined ||
+      isNaN(record.fee)
+    );
+  });
+
   csvWriter
-    .writeRecords(data)
+    .writeRecords(filteredData)
     .then(() => console.log(`CSV file ${fileName} was written successfully`));
 };
 
@@ -32,7 +43,8 @@ fs.readFile("allTransactions.json", "utf8", (err, jsonString) => {
       nonce: transaction.nonce,
       transactionHash: transaction.transactionHash,
       executor: transaction.executor,
-      fee: transaction.fee / 1e18, // Convert fee from Wei to Ether
+      fee: transaction.fee ? transaction.fee / 1e18 : NaN, // Convert fee from Wei to Ether, handle missing fee
+      executionDate: transaction.executionDate,
     }));
 
     // Write the transaction data to a CSV file
