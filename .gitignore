@@ -1,7 +1,8 @@
 # Ignore File
 
-# CSV Output File
+# CSV and JSON Output File
 *.csv
+*.JSON
 
 # Compiler files
 cache/
