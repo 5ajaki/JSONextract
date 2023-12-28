@@ -7,6 +7,14 @@ async function fetchAllTransactions(safeAddress) {
   const limit = 20;
   let isMoreDataAvailable = true;
 
+  // Display wait message for the impatient among us
+  process.stdout.write("Fetching data from Safe API");
+
+  // Create a periodic update to the wait message
+  const interval = setInterval(() => {
+    process.stdout.write(".");
+  }, 400); // Adjust the ms time as needed (250 is a bit hyper)
+
   while (isMoreDataAvailable) {
     try {
       const response = await axios.get(
@@ -25,17 +33,21 @@ async function fetchAllTransactions(safeAddress) {
         isMoreDataAvailable = false;
       }
     } catch (error) {
-      console.error("Error fetching transactions:", error);
+      console.error("\nError fetching transactions:", error);
       isMoreDataAvailable = false;
     }
   }
+  // Clear the interval and complete the message after fetching is complete
+  clearInterval(interval);
+  console.log(
+    "\nAll transactions have been fetched and saved to allTransactions.json"
+  );
 
   const structuredData = { results: allTransactions };
   fs.writeFileSync(
     "allTransactions.json",
     JSON.stringify(structuredData, null, 2)
   );
-  console.log("All transactions have been saved to allTransactions.json");
 }
 
 module.exports = fetchAllTransactions;

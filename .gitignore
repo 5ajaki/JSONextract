@@ -1,8 +1,11 @@
 # Ignore File
 
+# Data Folder
+data/
+
 # CSV and JSON Output File
 *.csv
-*.JSON
+allTransactions.JSON
 
 # Compiler files
 cache/
