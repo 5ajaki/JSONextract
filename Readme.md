@@ -1,6 +1,8 @@
-# JSON Extract and CSV Comparison Tool
+# JSON Extract and CSV Comparison Tool v2
 
-This repository contains JavaScript tools for handling Ethereum blockchain transaction data, including scripts for extracting data from JSON files, comparing CSV files, and fetching transaction data from a safe.
+This repository contains JavaScript tools for handling Ethereum transaction data, including scripts for extracting data from JSON files, comparing CSV files, and fetching transaction data from a safe.
+
+Version 2 focuses on the ability to pull fee and payer data directly from the Safe API
 
 ## Description
 
@@ -27,6 +29,12 @@ Install the required NPM packages:
     npm install csv-parse yargs csv-writer axios
 
 ### Executing the Scripts
+
+#### feeExtract.js
+
+Run the script to fetch all transactions for a specified safe and then extract fee information. The output CSV file will look like this:
+
+    node feeExtract.js
 
 #### extractOperations.js
 
