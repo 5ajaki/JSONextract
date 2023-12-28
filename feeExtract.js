@@ -17,8 +17,17 @@ const main = async () => {
 
   await fetchAllTransactions(safeAddress); // Fetch transactions with the provided address
 
+  // Extract the first six characters of the safe address
+  const shortSafeAddress = safeAddress.slice(0, 6);
+
+  // Get the current date and time in ISO format
+  const currentDate = new Date().toISOString();
+
+  // Construct the filename
+  const filename = `feeData-${shortSafeAddress}-${currentDate}.csv`;
+
   // Function to convert the transaction data to CSV format
-  const transactionsToCSV = (data, fileName) => {
+  function transactionsToCSV(data, fileName) {
     const csvWriter = createCsvWriter({
       path: fileName,
       header: [
@@ -43,7 +52,7 @@ const main = async () => {
     csvWriter
       .writeRecords(filteredData)
       .then(() => console.log(`CSV file ${fileName} was written successfully`));
-  };
+  }
 
   // Read the JSON file
   fs.readFile("allTransactions.json", "utf8", (err, jsonString) => {
@@ -64,7 +73,7 @@ const main = async () => {
       }));
 
       // Write the transaction data to a CSV file
-      transactionsToCSV(transactionData, "transactionsWFee.csv");
+      transactionsToCSV(transactionData, filename);
     } catch (err) {
       console.log("Error parsing JSON string:", err);
     }
