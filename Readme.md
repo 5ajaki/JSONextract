@@ -77,6 +77,7 @@ GitHub: [5ajaki](https://github.com/5ajaki)
 ## Version History
 
 - Initial Release
+- v2 - Focus on feeExtract flexibility
 
 ## License
 

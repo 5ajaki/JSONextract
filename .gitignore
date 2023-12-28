@@ -5,7 +5,7 @@ data/
 
 # CSV and JSON Output File
 *.csv
-allTransactions.JSON
+allTransactions.json
 
 # Compiler files
 cache/
