@@ -76,8 +76,8 @@ GitHub: [5ajaki](https://github.com/5ajaki)
 
 ## Version History
 
-- Initial Release
-- v2 - Focus on feeExtract flexibility
+- Initial Release - Hardcoded for ENS Metagov Safe queued Tx comparisons
+- v2 - Focus on feeExtract flexibility for use on all Safes
 
 ## License
 
