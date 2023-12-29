@@ -1,3 +1,5 @@
+const Web3 = require("web3"); // Import Web3 at the top
+
 const fs = require("fs");
 const { parse } = require("csv-parse");
 const fetchAllTransactions = require("./fetchAllTransactions");
@@ -9,13 +11,18 @@ const readSafesFromCSV = async (filePath) => {
   const parser = fs.createReadStream(filePath).pipe(
     parse({
       delimiter: ",",
-      from_line: 2, // Use 2 if there's a header, 1 if there's no header
-      relax_column_count: true, // This makes the parser more tolerant to varying column counts
+      from_line: 2, // Assuming there's a header
+      relax_column_count: true,
     })
   );
 
   for await (const row of parser) {
-    safes.push(row[0].trim()); // Directly pushing the address without conversion
+    try {
+      const checksumAddress = Web3.utils.toChecksumAddress(row[0].trim());
+      safes.push(checksumAddress);
+    } catch (error) {
+      console.error(`Invalid address format: ${row[0].trim()}`, error);
+    }
   }
 
   return safes;
@@ -70,8 +77,13 @@ const multiSafeFeeExtract = async () => {
       .then(() => console.log(`Written data to ${filename}`));
   };
 
-  // Writes the two files
-  writeToCSV(detailedTransactions, "detailedTransactions.csv", [
+  // To help filter out transactions with no nonce
+  const validTransactions = detailedTransactions.filter(
+    (tx) => tx.nonce !== undefined && tx.nonce !== null
+  );
+
+  // Writes the two files with only the valid transactions
+  writeToCSV(validTransactions, "detailedTransactions.csv", [
     { id: "nonce", title: "Nonce" },
     { id: "transactionHash", title: "Transaction Hash" },
     { id: "executor", title: "Executor" },
