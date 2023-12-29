@@ -31,28 +31,31 @@ const readSafesFromCSV = async (filePath) => {
 // Main function
 const multiSafeFeeExtract = async () => {
   const safes = await readSafesFromCSV("safes.csv");
-  let allTransactions = [];
+  //  let allTransactions = [];
   let executorSummary = {};
 
-  for (const safe of safes) {
-    console.log(`Fetching transactions for safe: ${safe}`);
-    const transactions = await fetchAllTransactions(safe);
-    allTransactions.push(...transactions);
+  // for (const safe of safes) {
+  //   console.log(`Fetching transactions for safe: ${safe}`);
+  //   const transactions = await fetchAllTransactions(safe);
+  //   allTransactions.push(...transactions);
 
-    transactions.forEach((tx) => {
-      if (tx.executor && tx.fee) {
-        const feeInEther = parseFloat(tx.fee) / 1e18; // Convert fee from Wei to Ether
-        if (!executorSummary[tx.executor]) {
-          executorSummary[tx.executor] = { totalFee: 0, txCount: 0 };
-        }
-        executorSummary[tx.executor].totalFee += feeInEther;
-        executorSummary[tx.executor].txCount++;
-      }
-    });
-  }
+  //   transactions.forEach((tx) => {
+  //     if (tx.executor && tx.fee) {
+  //       const feeInEther = parseFloat(tx.fee) / 1e18; // Convert fee from Wei to Ether
+  //       if (!executorSummary[tx.executor]) {
+  //         executorSummary[tx.executor] = { totalFee: 0, txCount: 0 };
+  //       }
+  //       executorSummary[tx.executor].totalFee += feeInEther;
+  //       executorSummary[tx.executor].txCount++;
+  //     }
+  //   });
+  // }
+
+  // Load transactions from the existing JSON file
+  const loadedTransactions = require("./allTransactions.json");
 
   // Prepare data for CSV output
-  const detailedTransactions = allTransactions.map((tx) => ({
+  const detailedTransactions = loadedTransactions.map((tx) => ({
     nonce: tx.nonce,
     transactionHash: tx.transactionHash,
     executor: tx.executor,
@@ -69,6 +72,48 @@ const multiSafeFeeExtract = async () => {
     })
   );
 
+  // Filter transactions based on the config file
+  const config = require("./config.json");
+
+  let filteredTransactions = detailedTransactions;
+
+  switch (config.filterType) {
+    case "date":
+      const startDate = new Date(config.dateRange.startDate);
+      const endDate =
+        config.dateRange.endDate.toLowerCase() === "latest"
+          ? new Date() // Set to current date for 'latest'
+          : new Date(config.dateRange.endDate);
+
+      filteredTransactions = filteredTransactions.filter((tx) => {
+        const txDate = new Date(tx.executionDate);
+        return txDate >= startDate && txDate <= endDate;
+      });
+      break;
+
+    case "block":
+      const startBlock = config.blockRange.startBlock;
+      const endBlock =
+        config.blockRange.endBlock.toLowerCase() === "latest"
+          ? Number.MAX_SAFE_INTEGER // Set to a very high number for 'latest'
+          : config.blockRange.endBlock;
+
+      filteredTransactions = filteredTransactions.filter((tx) => {
+        return tx.blockNumber >= startBlock && tx.blockNumber <= endBlock;
+      });
+      break;
+
+    default:
+      console.error("Invalid filter type specified in config.json");
+      break;
+  }
+
+  const finalFilteredTransactions = filteredTransactions.filter((tx) => {
+    const isValidTransaction =
+      tx.nonce !== undefined && tx.nonce !== null && !isNaN(tx.fee);
+    return isValidTransaction;
+  });
+
   // Function to write data to a CSV file
   const writeToCSV = (data, filename, headers) => {
     const csvWriter = createCsvWriter({ path: filename, header: headers });
@@ -77,13 +122,19 @@ const multiSafeFeeExtract = async () => {
       .then(() => console.log(`Written data to ${filename}`));
   };
 
-  // To help filter out transactions with no nonce
-  const validTransactions = detailedTransactions.filter(
-    (tx) => tx.nonce !== undefined && tx.nonce !== null
-  );
+  loadedTransactions.forEach((tx) => {
+    if (tx.executor && tx.fee) {
+      const feeInEther = parseFloat(tx.fee) / 1e18; // Convert fee from Wei to Ether
+      if (!executorSummary[tx.executor]) {
+        executorSummary[tx.executor] = { totalFee: 0, txCount: 0 };
+      }
+      executorSummary[tx.executor].totalFee += feeInEther;
+      executorSummary[tx.executor].txCount++;
+    }
+  });
 
   // Writes the two files with only the valid transactions
-  writeToCSV(validTransactions, "detailedTransactions.csv", [
+  writeToCSV(finalFilteredTransactions, "detailedTransactions.csv", [
     { id: "nonce", title: "Nonce" },
     { id: "transactionHash", title: "Transaction Hash" },
     { id: "executor", title: "Executor" },

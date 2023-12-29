@@ -1,10 +1,11 @@
 {
-  "dateFilter": {
+  "filterType": "block",
+  "dateRange": {
     "startDate": "2023-01-01",
-    "endDate": "2023-12-31"
+    "endDate": "latest"
   },
-  "blockNumberFilter": {
-    "startBlock": 1000000,
-    "endBlock": 2000000
+  "blockRange": {
+    "startBlock": 17663942,
+    "endBlock": "latest"
   }
 }
