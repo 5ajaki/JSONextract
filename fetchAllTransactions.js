@@ -48,6 +48,8 @@ async function fetchAllTransactions(safeAddress) {
     "allTransactions.json",
     JSON.stringify(structuredData, null, 2)
   );
+
+  return allTransactions; // Return the fetched transactions
 }
 
 module.exports = fetchAllTransactions;

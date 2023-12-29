@@ -1,0 +1,10 @@
+{
+  "dateFilter": {
+    "startDate": "2023-01-01",
+    "endDate": "2023-12-31"
+  },
+  "blockNumberFilter": {
+    "startBlock": 1000000,
+    "endBlock": 2000000
+  }
+}
