@@ -1,13 +1,14 @@
 const axios = require("axios");
 const fs = require("fs");
-const config = require("./config.json"); // Load the configuration file
 
-// Function to fetch transactions for a single safe address
 async function fetchTransactionsForSafe(safeAddress) {
   let transactions = [];
   let offset = 0;
   const limit = 20;
   let isMoreDataAvailable = true;
+
+  // Start progress message for each safe address
+  console.log(`Fetching data for safe address ${safeAddress}...`);
 
   while (isMoreDataAvailable) {
     try {
@@ -23,6 +24,7 @@ async function fetchTransactionsForSafe(safeAddress) {
       ) {
         transactions = transactions.concat(response.data.results);
         offset += response.data.results.length;
+        process.stdout.write("."); // Progress indicator
       } else {
         isMoreDataAvailable = false;
       }
@@ -35,72 +37,27 @@ async function fetchTransactionsForSafe(safeAddress) {
     }
   }
 
+  console.log(" Done."); // Indicate completion for this address
   return transactions;
 }
 
-function filterTransactionsByDate(transactions, startDate, endDate) {
-  return transactions.filter((tx) => {
-    const executionDate = new Date(tx.executionDate);
-    return executionDate >= startDate && executionDate <= endDate;
-  });
-}
-
-function filterTransactionsByBlock(transactions, startBlock, endBlock) {
-  return transactions.filter((tx) => {
-    const blockNumber = parseInt(tx.blockNumber);
-    return blockNumber >= startBlock && blockNumber <= endBlock;
-  });
-}
-
 async function fetchAllTransactions(safeAddresses) {
-  const fetchPromises = safeAddresses.map((safeAddress) => {
-    return fetchTransactionsForSafe(safeAddress);
-  });
-
-  const results = await Promise.all(fetchPromises);
-
   let allTransactions = [];
-  results.forEach((transactions) => {
-    allTransactions.push(...transactions);
-  });
 
-  // Apply filters based on config
-  let filteredTransactions;
-  if (config.filterType === "date") {
-    const startDate = new Date(config.dateRange.startDate);
-    const endDate =
-      config.dateRange.endDate === "latest"
-        ? new Date()
-        : new Date(config.dateRange.endDate);
-    filteredTransactions = filterTransactionsByDate(
-      allTransactions,
-      startDate,
-      endDate
-    );
-  } else if (config.filterType === "block") {
-    const startBlock = config.blockRange.startBlock;
-    const endBlock =
-      config.blockRange.endBlock === "latest"
-        ? Number.MAX_SAFE_INTEGER
-        : config.blockRange.endBlock;
-    filteredTransactions = filterTransactionsByBlock(
-      allTransactions,
-      startBlock,
-      endBlock
-    );
-  } else {
-    console.error("Invalid filter type specified in config.json");
-    return;
+  // Loop through each address sequentially
+  for (const address of safeAddresses) {
+    const transactions = await fetchTransactionsForSafe(address);
+    allTransactions.push(...transactions);
   }
 
-  // Save the filtered transactions to a JSON file (if needed)
-  const structuredData = { results: filteredTransactions };
+  // Saving the aggregated transactions to a JSON file
+  const structuredData = { results: allTransactions };
   fs.writeFileSync(
-    "filteredTransactions.json",
+    "allTransactions.json",
     JSON.stringify(structuredData, null, 2)
   );
 
-  return filteredTransactions;
+  return allTransactions;
 }
 
 module.exports = fetchAllTransactions;
