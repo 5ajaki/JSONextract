@@ -1,6 +1,6 @@
 const fs = require("fs");
 const { parse } = require("csv-parse"); // Correctly import the parse function
-const fetchAllTransactions = require("./fetchAllTransactions");
+const fetchAllTransactions = require("../fetchAllTransactions");
 
 async function readSafesFromCSV(filePath) {
   const safes = [];

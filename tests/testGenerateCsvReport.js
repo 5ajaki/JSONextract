@@ -1,5 +1,5 @@
 const fs = require("fs");
-const generateCsvReport = require("./generateCsvReport");
+const generateCsvReport = require("../generateCsvReport");
 
 async function readFilteredTransactions(filePath) {
   const rawData = fs.readFileSync(filePath);
