@@ -1,16 +1,14 @@
-# JSON Extract and CSV Comparison Tool v2
+# Safe Tx Fee Report
 
-This repository contains JavaScript tools for handling Ethereum transaction data, including scripts for extracting data from JSON files, comparing CSV files, and fetching transaction data from a safe.
+This repository reads a list of safes and generates two reports of the gass fees paid by the associated executors. It's a simple way for any group or DAO to sum the Tx fees that their executors have paid for over a configurable period of time. The CSVs generated can easliy be inputs back into the safe through CSV Airdrop, Pacel tools, etc.
 
-Version 2 focuses on the ability to pull fee and payer data directly from the Safe API
+The list of input safes should be in the root directory as safes.CSV - make sure it's a one column csv file with a header row.
+
+The config.json file allows for the output to be filtered by date or block number. Specify either 'block' or 'date' and then the start/stop values. Use 'latest' in place of a stop value if needed.
 
 ## Description
 
-- `feeExtract.js`: The main use in v2. Interactively prompts for a safe address, fetches all transactions for that address, and then processes and saves the fee information in CSV format.
-
-- `extractOperations.js`: Extracts operations data from a JSON file and outputs the data into CSV files. It creates a consolidated CSV file with all operations and individual CSV files for each specified nonce.
-- `compareCSV.js`: Compares two CSV files for matching and non-matching rows. It supports case-sensitive or case-insensitive comparison and allows for a configurable numerical tolerance in data comparison.
-- `fetchAllTransactions.js`: Fetches all transactions for a specified safe address from the Ethereum blockchain and saves them as a JSON file.
+- `runReport.js`: Reads the safes.CSV file and pulls the data from the Safe API to generate the two reports.
 
 ## Getting Started
 
@@ -31,9 +29,11 @@ Install the required NPM packages:
 
 ### Executing the Scripts
 
-#### feeExtract.js
+    node runReport.js
 
-Run the script to fetch all transactions for a specified safe and then extract fee information. The output CSV file will look like this:
+#### Output
+
+The output CSV file will look like this:
 
 | Nonce | Transaction Hash                                                   | Executor                                   | Fee (in Ether)      | Execution Date       |
 | ----- | ------------------------------------------------------------------ | ------------------------------------------ | ------------------- | -------------------- |
@@ -78,11 +78,9 @@ GitHub: [5ajaki](https://github.com/5ajaki)
 
 - Initial Release - Hardcoded for ENS Metagov Safe queued Tx comparisons
 - v2 - Focus on feeExtract flexibility for use on all Safes
+- v3 Multiple inputs and outputs.
+- v4 Fully functional
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-Special thanks to all contributors and those who provided insights into the Ethereum blockchain data structure.
